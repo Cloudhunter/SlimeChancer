@@ -65,7 +65,7 @@ public class CommonProxy
         }
     }, 3, 3);
 
-    @SuppressWarnings("deprecated")
+    @SuppressWarnings("deprecation")
     private void checkAndAddOreState(String oreName, @Nullable ItemStack stack)
     {
         if (alreadyProcessed.contains(oreName)) return;
