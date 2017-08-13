@@ -1,22 +1,19 @@
 package uk.co.cloudhunter.slimechancer.common;
 
 import com.google.common.base.Function;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.crash.ICrashReportDetail;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -29,7 +26,9 @@ import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class SingleBlockWorld extends World {
+public class SingleBlockWorld extends World
+{
+    public static BlockPos pos = new BlockPos(5, 5, 5);
     private IBlockState storedBlockState = Blocks.AIR.getDefaultState();
     private TileEntity storedTileEntity;
     private IChunkProvider storedChunkProvider;
@@ -37,17 +36,19 @@ public class SingleBlockWorld extends World {
     private Chunk storedChunk;
     private World us = this;
 
-    public static BlockPos pos = new BlockPos(5, 5, 5);
-
-    public SingleBlockWorld(IBlockState blockState) {
+    public SingleBlockWorld(IBlockState blockState)
+    {
         this(blockState, null, false);
         //storedBlockState = blockState;
     }
 
-    public SingleBlockWorld(IBlockState blockState, EntityMySlime slime, boolean clientWorld) {
+    public SingleBlockWorld(IBlockState blockState, EntityMySlime slime, boolean clientWorld)
+    {
         super(new SaveHandlerMP(), new WorldInfo(new WorldSettings(0, GameType.CREATIVE, true, false, WorldType.DEFAULT), "mahfake"),
-                new WorldProvider() {
-                    public DimensionType getDimensionType() {
+                new WorldProvider()
+                {
+                    public DimensionType getDimensionType()
+                    {
                         return DimensionType.OVERWORLD;
                     }
                 }, new Profiler(), clientWorld);
@@ -62,18 +63,23 @@ public class SingleBlockWorld extends World {
     }
 
     @Override
-    protected IChunkProvider createChunkProvider() {
+    protected IChunkProvider createChunkProvider()
+    {
         if (storedChunkProvider != null)
             return storedChunkProvider;
         else
-            return storedChunkProvider = new IChunkProvider() {
+            return storedChunkProvider = new IChunkProvider()
+            {
                 @Nullable
                 @Override
-                public Chunk getLoadedChunk(int x, int z) {
+                public Chunk getLoadedChunk(int x, int z)
+                {
                     if (storedChunk == null)
-                        storedChunk = new Chunk(us, x, z) {
+                        storedChunk = new Chunk(us, x, z)
+                        {
                             @Nullable
-                            public IBlockState setBlockState(BlockPos pos, IBlockState state) {
+                            public IBlockState setBlockState(BlockPos pos, IBlockState state)
+                            {
                                 if (storedSlime != null && !us.isRemote)
                                     storedSlime.setSlimeType(state);
                                 return storedBlockState = state;
@@ -83,6 +89,8 @@ public class SingleBlockWorld extends World {
                             {
                                 if (x == 5 && y == 5 && z == 5)
                                     return storedBlockState;
+                                if (x == 5 && y == 6 && z == 5 && storedBlockState.getBlock() instanceof BlockChest)
+                                    return Blocks.AIR.getDefaultState();
                                 return Blocks.DIAMOND_BLOCK.getDefaultState();
                             }
 
@@ -164,40 +172,47 @@ public class SingleBlockWorld extends World {
                 }
 
                 @Override
-                public Chunk provideChunk(int x, int z) {
+                public Chunk provideChunk(int x, int z)
+                {
                     //if (x == 0 && z == 0)
                     return getLoadedChunk(x, z);
                     //return null;
                 }
 
                 @Override
-                public boolean tick() {
+                public boolean tick()
+                {
                     return false;
                 }
 
                 @Override
-                public String makeString() {
+                public String makeString()
+                {
                     return "fakeymcfakeface";
                 }
 
                 @Override
-                public boolean isChunkGeneratedAt(int x, int z) {
+                public boolean isChunkGeneratedAt(int x, int z)
+                {
                     return true;
                 }
             };
     }
 
     @Override
-    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
+    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty)
+    {
         return true;
     }
 
-    public void playRecord(BlockPos blockPositionIn, @Nullable SoundEvent soundEventIn) {
+    public void playRecord(BlockPos blockPositionIn, @Nullable SoundEvent soundEventIn)
+    {
         //TODO: if linked entity do in real world? *shrugs*
 
     }
 
-    public void spawnParticle(EnumParticleTypes particleType, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, int... parameters) {
+    public void spawnParticle(EnumParticleTypes particleType, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, int... parameters)
+    {
         //TODO: if linked entity do in real world? *shrugs*
     }
 
@@ -268,7 +283,8 @@ public class SingleBlockWorld extends World {
     {
         TileEntity tileentity = storedTileEntity;
 
-        if (tileentity == null) {
+        if (tileentity == null)
+        {
             return;
         }
 
@@ -280,7 +296,7 @@ public class SingleBlockWorld extends World {
             {
                 try
                 {
-                    ((ITickable)tileentity).update();
+                    ((ITickable) tileentity).update();
                 }
                 catch (Throwable throwable)
                 {

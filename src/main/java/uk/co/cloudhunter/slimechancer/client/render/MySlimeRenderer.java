@@ -1,56 +1,39 @@
 package uk.co.cloudhunter.slimechancer.client.render;
 
-import com.mojang.authlib.GameProfile;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockShulkerBox;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelShield;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.tileentity.*;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import uk.co.cloudhunter.slimechancer.SlimeChancer;
 import uk.co.cloudhunter.slimechancer.common.SingleBlockWorld;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
-import uk.co.cloudhunter.slimechancer.SlimeChancer;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
-public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
+public class MySlimeRenderer extends RenderLiving<EntityMySlime>
+{
 
 
     private boolean blockRender = false;
@@ -65,16 +48,22 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
         this.addLayer(new MyLayerSlimeGel(this));
     }
 
-    private Color getAverageColour(TextureAtlasSprite sprite) {
+    private Color getAverageColour(TextureAtlasSprite sprite)
+    {
         int format = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_COMPONENTS);
         int width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
         int height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         int channels;
         int byteCount;
-        switch (format) {
-            case GL11.GL_RGB: channels = 3; break;
+        switch (format)
+        {
+            case GL11.GL_RGB:
+                channels = 3;
+                break;
             case GL11.GL_RGBA:
-            default: channels = 4; break;
+            default:
+                channels = 4;
+                break;
         }
         byteCount = width * height * channels;
         ByteBuffer bytes = BufferUtils.createByteBuffer(byteCount);
@@ -86,8 +75,10 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
         int hei = sprite.getIconHeight() + yStart;
         long sumr = 0, sumg = 0, sumb = 0;
         int num = 0;
-        for (int x=xStart; x<wid; x++) {
-            for (int y=yStart; y<hei; y++) {
+        for (int x = xStart; x < wid; x++)
+        {
+            for (int y = yStart; y < hei; y++)
+            {
                 int i = (x + (width * y)) * channels;
                 int r = bytes.get(i) & 0xFF;
                 int g = bytes.get(i + 1) & 0xFF;
@@ -105,26 +96,33 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
     }
 
     @Override
-    public void doRender(EntityMySlime entity, double x, double y, double z, float entityYaw, float partialTicks) {
+    public void doRender(EntityMySlime entity, double x, double y, double z, float entityYaw, float partialTicks)
+    {
         renderBlock(entity, x, y, z, entityYaw, partialTicks);
 
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
 
-    private TextureAtlasSprite getTexture(IBakedModel ibakedmodel, IBlockState state, EnumFacing facing) {
+    private TextureAtlasSprite getTexture(IBakedModel ibakedmodel, IBlockState state, EnumFacing facing)
+    {
         List<BakedQuad> quadList = ibakedmodel.getQuads(state, facing, 0L);
         TextureAtlasSprite sprite = quadList.isEmpty() ? ibakedmodel.getParticleTexture() : quadList.get(0).getSprite();
         return sprite == null ? null : sprite;
     }
 
-    public void renderBlock(EntityMySlime entity, double x, double y, double z, float yaw, float partialTicks) {
+    public void renderBlock(EntityMySlime entity, double x, double y, double z, float yaw, float partialTicks)
+    {
 
         IBlockState iblockstate = entity.getSlimeType();
 
-        if (colors.get(iblockstate) == null) {
-            if (iblockstate.getRenderType() != EnumBlockRenderType.MODEL) {
+        if (colors.get(iblockstate) == null)
+        {
+            if (iblockstate.getRenderType() != EnumBlockRenderType.MODEL)
+            {
                 colors.put(iblockstate, new Color(255, 255, 255, 255));
-            } else {
+            }
+            else
+            {
                 Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                 IBakedModel modelForState = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(iblockstate);
                 TextureAtlasSprite textureSprite = getTexture(modelForState, iblockstate, EnumFacing.NORTH);
@@ -143,7 +141,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
                 this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
                 GlStateManager.pushMatrix();
-                GlStateManager.translate((float)x, (float)y, (float)z);
+                GlStateManager.translate((float) x, (float) y, (float) z);
                 GlStateManager.disableLighting();
 
                 Tessellator tessellator = Tessellator.getInstance();
@@ -185,14 +183,17 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
 
             }
 
-            if (iblockstate.getBlock().hasTileEntity(iblockstate)) {
-                if (iblockstate.getBlock().hasTileEntity(iblockstate)) {
-                    if (entity.singleBlockWorld != null) {
+            if (iblockstate.getBlock().hasTileEntity(iblockstate))
+            {
+                if (iblockstate.getBlock().hasTileEntity(iblockstate))
+                {
+                    if (entity.singleBlockWorld != null)
+                    {
                         TileEntity tileentityIn = entity.singleBlockWorld.getTileEntity(SingleBlockWorld.pos);
 
-                        if (tileentityIn != null) {
+                        if (tileentityIn != null)
+                        {
                             GlStateManager.pushMatrix();
-
 
 
                             //GlStateManager.translate(0.5, 0.5, 0.5);
@@ -204,7 +205,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
                             this.applyRotations(entity, f8, f, partialTicks);
 
 
-
                             //GlStateManager.scale(2, 2, 2);
 
                             blockRender = true;
@@ -214,9 +214,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
                             //GlStateManager.scale(1.05, 1.05, 1.05);
 
                             GlStateManager.translate(-0.5, 0.16, -0.5);
-
-
-
 
 
 //                            GlStateManager.translate(-0.10, 0.75, 0.25);
@@ -232,7 +229,8 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
         }
     }
 
-    private void tileRender(TileEntity tileentityIn, double entityX, double entityY, double entityZ, float partialTicks) {
+    private void tileRender(TileEntity tileentityIn, double entityX, double entityY, double entityZ, float partialTicks)
+    {
         TileEntityRendererDispatcher.instance.render(tileentityIn, entityX, entityY, entityZ, 0.0F, 1.0F);
     }
 
@@ -240,7 +238,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime> {
     protected void preRenderCallback(EntityMySlime entitylivingbaseIn, float partialTickTime)
     {
         GlStateManager.scale(0.999F, 0.999F, 0.999F);
-        float f1 = (float)entitylivingbaseIn.getSlimeSize();
+        float f1 = (float) entitylivingbaseIn.getSlimeSize();
         if (blockRender) f1 = f1 / 2.65f;
         float f2 = (entitylivingbaseIn.prevSquishFactor + (entitylivingbaseIn.squishFactor - entitylivingbaseIn.prevSquishFactor) * partialTickTime) / (f1 * 0.5F + 1.0F);
         float f3 = 1.0F / (f2 + 1.0F);

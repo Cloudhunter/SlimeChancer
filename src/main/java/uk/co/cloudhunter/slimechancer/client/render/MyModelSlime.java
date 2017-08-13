@@ -12,11 +12,17 @@ public class MyModelSlime extends ModelBase
 {
     /** The slime's bodies, both the inside box and the outside box */
     //ModelRenderer slimeBodies;
-    /** The slime's right eye */
+    /**
+     * The slime's right eye
+     */
     ModelRenderer slimeRightEye;
-    /** The slime's left eye */
+    /**
+     * The slime's left eye
+     */
     ModelRenderer slimeLeftEye;
-    /** The slime's mouth */
+    /**
+     * The slime's mouth
+     */
     ModelRenderer slimeMouth;
 
     public MyModelSlime(int p_i1157_1_)

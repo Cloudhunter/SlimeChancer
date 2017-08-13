@@ -8,7 +8,8 @@ import net.minecraft.network.datasync.DataSerializer;
 
 import java.io.IOException;
 
-public class BlockStateSerializer implements DataSerializer<IBlockState> {
+public class BlockStateSerializer implements DataSerializer<IBlockState>
+{
 
     public static final DataSerializer<IBlockState> BLOCK_STATE = new BlockStateSerializer();
 
@@ -16,15 +17,18 @@ public class BlockStateSerializer implements DataSerializer<IBlockState> {
     {
         buf.writeVarInt(Block.getStateId(value));
     }
+
     public IBlockState read(PacketBuffer buf) throws IOException
     {
         int i = buf.readVarInt();
         return Block.getStateById(i);
     }
+
     public DataParameter<IBlockState> createKey(int id)
     {
         return new DataParameter<>(id, this);
     }
+
     public IBlockState copyValue(IBlockState value)
     {
         return value;
