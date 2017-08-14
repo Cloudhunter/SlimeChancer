@@ -2,6 +2,7 @@ package uk.co.cloudhunter.slimechancer.common;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
@@ -12,12 +13,15 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CommonProxy
 {
@@ -39,7 +43,7 @@ public class CommonProxy
 
     public void init()
     {
-
+        DimensionManager.registerDimension(-9654, DimensionType.OVERWORLD);
     }
 
     public void preInit()
@@ -71,68 +75,78 @@ public class CommonProxy
         if (alreadyProcessed.contains(oreName)) return;
         if (oreName.length() >= 3 && oreName.substring(0, 3).equals(prefix))
         {
+            IBlockState state = null;
             if (stack == null)
             {
                 NonNullList<ItemStack> ores = OreDictionary.getOres(oreName);
                 for (ItemStack tempStack : ores)
                 {
-                    Item item = tempStack.getItem();
-                    if (item instanceof ItemBlock)
-                    {
-                        IBlockState state = ((ItemBlock) item).getBlock().getStateFromMeta(tempStack.getMetadata());
-                        NonNullList<ItemStack> dropList = NonNullList.create();
-                        World world = new SingleBlockWorld(state);
-                        ((ItemBlock) item).getBlock().getDrops(dropList, world, new BlockPos(0, 0, 0), state, 0);
-
-                        ItemStack result = getCraftingResult(dropList.get(0), world);
-
-                        if (!result.isEmpty())
-                        {
-                            state = ((ItemBlock) result.getItem()).getBlock().getStateFromMeta(result.getMetadata());
-                        }
-                        else
-                        {
-                            result = FurnaceRecipes.instance().getSmeltingResult(dropList.get(0));
-                            if (!result.isEmpty())
-                            {
-                                item = result.getItem();
-                                if (item instanceof ItemBlock)
-                                {
-                                    state = ((ItemBlock) item).getBlock().getStateFromMeta(result.getMetadata());
-                                }
-                                else
-                                {
-                                    result = getCraftingResult(result, world);
-                                    System.out.println("PENIS2");
-                                    System.out.println(oreName);
-                                    if (!result.isEmpty())
-                                    {
-                                        state = ((ItemBlock) result.getItem()).getBlock().getStateFromMeta(result.getMetadata());
-                                    }
-                                    else
-                                    {
-                                        System.out.println("WARNING: Could not find processed block for " + oreName); //TODO: Change to log
-                                    }
-                                }
-                            }
-                        }
-
-                        validOreStates.add(state);
-                        alreadyProcessed.add(oreName);
+                    state = getLowestState(tempStack);
+                    if (state != null) {
                         break;
                     }
                 }
+
+
             }
             else
             {
-                Item item = stack.getItem();
-                if (item instanceof ItemBlock)
+                state = getLowestState(stack);
+            }
+
+            if (state == null) {
+                System.out.println("WARNING: Could not find processed block for " + oreName); //TODO: Change to log
+            } else {
+                validOreStates.add(state);
+                alreadyProcessed.add(oreName);
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private IBlockState getLowestState(ItemStack stack) {
+        World world = new SingleBlockWorld(Blocks.AIR.getDefaultState());
+        ItemStack innerStack;
+        Item item = stack.getItem();
+        IBlockState state = null;
+        if (item instanceof ItemBlock)
+        {
+            state = ((ItemBlock) item).getBlock().getStateFromMeta(stack.getMetadata());
+            world.setBlockState(SingleBlockWorld.pos, state);
+            NonNullList<ItemStack> dropList = NonNullList.create();
+            ((ItemBlock) item).getBlock().getDrops(dropList, world, SingleBlockWorld.pos, state, 0);
+            innerStack = dropList.get(0);
+        }
+        else
+        {
+            innerStack = stack;
+        }
+
+        ItemStack result = getCraftingResult(innerStack, world);
+
+        if (!result.isEmpty() && result.getItem() instanceof ItemBlock)
+        {
+            state = ((ItemBlock) result.getItem()).getBlock().getStateFromMeta(result.getMetadata());
+        }
+
+        result = FurnaceRecipes.instance().getSmeltingResult(innerStack);
+        if (!result.isEmpty())
+        {
+            item = result.getItem();
+            if (item instanceof ItemBlock)
+            {
+                state = ((ItemBlock) item).getBlock().getStateFromMeta(result.getMetadata());
+            }
+            else
+            {
+                result = getCraftingResult(result, world);
+                if (!result.isEmpty())
                 {
-                    validOreStates.add(((ItemBlock) item).getBlock().getStateFromMeta(stack.getMetadata()));
-                    alreadyProcessed.add(oreName);
+                    state = ((ItemBlock) result.getItem()).getBlock().getStateFromMeta(result.getMetadata());
                 }
             }
         }
+        return state;
     }
 
     private ItemStack getCraftingResult(ItemStack stack, World world)

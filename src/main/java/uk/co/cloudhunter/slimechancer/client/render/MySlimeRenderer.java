@@ -68,7 +68,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
         byteCount = width * height * channels;
         ByteBuffer bytes = BufferUtils.createByteBuffer(byteCount);
         GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, format, GL11.GL_UNSIGNED_BYTE, bytes);
-        final String ext = "PNG";
         int xStart = sprite.getOriginX();
         int yStart = sprite.getOriginY();
         int wid = sprite.getIconWidth() + xStart;
@@ -107,11 +106,12 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
     {
         List<BakedQuad> quadList = ibakedmodel.getQuads(state, facing, 0L);
         TextureAtlasSprite sprite = quadList.isEmpty() ? ibakedmodel.getParticleTexture() : quadList.get(0).getSprite();
-        return sprite == null ? null : sprite;
+        return sprite;
     }
 
     public void renderBlock(EntityMySlime entity, double x, double y, double z, float yaw, float partialTicks)
     {
+        // This may look like I know what I am doing, but I assure you - I do not.
 
         IBlockState iblockstate = entity.getSlimeType();
 
@@ -195,28 +195,18 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
                         {
                             GlStateManager.pushMatrix();
 
-
-                            //GlStateManager.translate(0.5, 0.5, 0.5);
-
                             GlStateManager.translate(x, y, z);
 
                             float f = this.interpolateRotation(entity.prevRenderYawOffset, entity.renderYawOffset, partialTicks);
                             float f8 = this.handleRotationFloat(entity, partialTicks);
                             this.applyRotations(entity, f8, f, partialTicks);
 
-
-                            //GlStateManager.scale(2, 2, 2);
-
                             blockRender = true;
                             float f4 = this.prepareScale(entity, partialTicks);
                             blockRender = false;
 
-                            //GlStateManager.scale(1.05, 1.05, 1.05);
-
                             GlStateManager.translate(-0.5, 0.16, -0.5);
 
-
-//                            GlStateManager.translate(-0.10, 0.75, 0.25);
                             tileRender(tileentityIn, 0, 0, 0, partialTicks);
 
                             GlStateManager.popMatrix();
@@ -237,6 +227,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
     @Override
     protected void preRenderCallback(EntityMySlime entitylivingbaseIn, float partialTickTime)
     {
+        //TODO: Remove blockRender stuff and just pass as variable with a default override to pass false.
         GlStateManager.scale(0.999F, 0.999F, 0.999F);
         float f1 = (float) entitylivingbaseIn.getSlimeSize();
         if (blockRender) f1 = f1 / 2.65f;
@@ -248,6 +239,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
     @Override
     public float prepareScale(EntityMySlime entitylivingbaseIn, float partialTicks)
     {
+        //TODO: Remove blockRender stuff and just pass as variable with a default override to pass false.
         GlStateManager.enableRescaleNormal();
         if (!blockRender) GlStateManager.scale(-1.0F, -1.0F, 1.0F);
         this.preRenderCallback(entitylivingbaseIn, partialTicks);

@@ -1,10 +1,14 @@
 package uk.co.cloudhunter.slimechancer.common.entities;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -13,6 +17,7 @@ import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -21,8 +26,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.server.FMLServerHandler;
 import net.minecraftforge.oredict.OreDictionary;
+import uk.co.cloudhunter.slimechancer.SlimeChancer;
 import uk.co.cloudhunter.slimechancer.common.SingleBlockWorld;
+import uk.co.cloudhunter.slimechancer.common.SingleBlockWorldServer;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +43,7 @@ public class EntityMySlime extends EntitySlime
 {
 
     private BlockPos origin;
-    public SingleBlockWorld singleBlockWorld;
+    public World singleBlockWorld;
 //    public IBlockState type;
 
     private static final DataParameter<IBlockState> SLIME_TYPE = EntityDataManager.<IBlockState>createKey(EntityMySlime.class, BLOCK_STATE);
@@ -101,7 +111,6 @@ public class EntityMySlime extends EntitySlime
         {
             singleBlockWorld.setBlockState(SingleBlockWorld.pos, state);
         }
-        System.out.println(state);
         this.dataManager.set(SLIME_TYPE, state);
     }
 
@@ -116,9 +125,11 @@ public class EntityMySlime extends EntitySlime
         if (SLIME_TYPE.equals(key) && world.isRemote)
         {
             IBlockState state = this.getSlimeType();
-            System.out.println(state);
             if (singleBlockWorld == null)
             {
+                if (world instanceof WorldServer)
+                    singleBlockWorld = new SingleBlockWorldServer(state, this);
+                else
                 singleBlockWorld = new SingleBlockWorld(state, this, true);
             }
             else
@@ -162,7 +173,10 @@ public class EntityMySlime extends EntitySlime
 
                 if (tileEntity != null)
                 {
-                    singleBlockWorld = new SingleBlockWorld(blockstate, this, false);
+                    if (world instanceof WorldServer)
+                        singleBlockWorld = new SingleBlockWorldServer(blockstate, this);
+                    else
+                        singleBlockWorld = new SingleBlockWorld(blockstate, this, true);
                     tileEntity.setWorld(singleBlockWorld);
                     NBTTagCompound teCompound = compound.getCompoundTag("tetag");
                     tileEntity.readFromNBT(teCompound);
@@ -222,13 +236,14 @@ public class EntityMySlime extends EntitySlime
     @Nullable
     public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata)
     {
-        /*int i = this.rand.nextInt(SlimeChancer.proxy.getOreStates().size());
+        int i = this.rand.nextInt(SlimeChancer.proxy.getOreStates().size());
 
-        this.setSlimeType(SlimeChancer.proxy.getOreStates().get(i));*/
-        IBlockState state = Blocks.BEACON.getDefaultState();
-        singleBlockWorld = new SingleBlockWorld(state, this, world.isRemote);
+        IBlockState state = SlimeChancer.proxy.getOreStates().get(i);
 
-        //((TileEntitySkull)singleBlockWorld.getTileEntity(SingleBlockWorld.pos)).setPlayerProfile(new GameProfile(null, "AutismWithSkip"));
+        if (world instanceof WorldServer)
+            singleBlockWorld = new SingleBlockWorldServer(state, this);
+        else
+            singleBlockWorld = new SingleBlockWorld(state, this, true);
 
         return super.onInitialSpawn(difficulty, livingdata);
     }
@@ -237,7 +252,7 @@ public class EntityMySlime extends EntitySlime
     @SuppressWarnings("deprecation")
     protected boolean processInteract(EntityPlayer player, EnumHand hand)
     {
-        if (hand.equals(EnumHand.MAIN_HAND) && player.isSneaking())
+        if (hand.equals(EnumHand.MAIN_HAND) && player.isSneaking()) //TODO: Remove for release
         {
             if (!world.isRemote)
             {
@@ -246,7 +261,6 @@ public class EntityMySlime extends EntitySlime
                 {
                     if (stack.getItem() instanceof ItemBlock)
                     {
-                        System.out.println("Setting " + stack);
                         setSlimeType(((ItemBlock) stack.getItem()).getBlock().getStateFromMeta(stack.getMetadata()), true);
                         return true;
                     }
@@ -255,9 +269,7 @@ public class EntityMySlime extends EntitySlime
         }
         if (singleBlockWorld != null && !player.isSneaking())
         {
-            //System.out.println(singleBlockWorld);
             IBlockState state = singleBlockWorld.getBlockState(SingleBlockWorld.pos);
-            //System.out.println(((TileEntityBeacon)singleBlockWorld.getTileEntity(singleBlockWorld.pos)).getLevels());
             return state.getBlock().onBlockActivated(singleBlockWorld, SingleBlockWorld.pos, state, player, hand, EnumFacing.NORTH, 0, 0, 0);
         }
 

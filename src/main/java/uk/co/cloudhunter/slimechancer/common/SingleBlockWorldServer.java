@@ -18,9 +18,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandlerMP;
 import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
@@ -28,7 +31,7 @@ import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class SingleBlockWorld extends World
+public class SingleBlockWorldServer extends WorldServer
 {
     public static BlockPos pos = new BlockPos(5, 5, 5);
     private IBlockState storedBlockState = Blocks.AIR.getDefaultState();
@@ -38,30 +41,30 @@ public class SingleBlockWorld extends World
     private Chunk storedChunk;
     private World us = this;
 
-    public SingleBlockWorld(IBlockState blockState)
+    public SingleBlockWorldServer(IBlockState blockState)
     {
-        this(blockState, null, false);
+        this(blockState, null);
         //storedBlockState = blockState;
     }
 
-    public SingleBlockWorld(IBlockState blockState, EntityMySlime slime, boolean clientWorld)
+    public SingleBlockWorldServer(IBlockState blockState, EntityMySlime slime)
     {
-        super(new SaveHandlerMP(), new WorldInfo(new WorldSettings(0, GameType.CREATIVE, true, false, WorldType.DEFAULT), "mahfake"),
-                new WorldProvider()
-                {
-                    public DimensionType getDimensionType()
-                    {
-                        return DimensionType.OVERWORLD;
-                    }
-                }, new Profiler(), clientWorld);
+        super(FMLCommonHandler.instance().getMinecraftServerInstance(), new SaveHandlerMP(), new WorldInfo(new WorldSettings(0, GameType.CREATIVE, true, false, WorldType.DEFAULT), "mahfake"), -9654, new Profiler());
+        DimensionManager.setWorld(-9654, null, FMLCommonHandler.instance().getMinecraftServerInstance());
         this.storedSlime = slime;
         this.chunkProvider = this.createChunkProvider();
-        this.setBlockState(SingleBlockWorld.pos, blockState);
+        this.setBlockState(SingleBlockWorldServer.pos, blockState);
     }
 
     public BlockPos getSpawnPoint()
     {
         return pos;
+    }
+
+    @Override
+    public java.io.File getChunkSaveLocation()
+    {
+        return null;
     }
 
     public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default)
@@ -75,7 +78,7 @@ public class SingleBlockWorld extends World
         if (storedChunkProvider != null)
             return storedChunkProvider;
         else
-            return storedChunkProvider = new IChunkProvider()
+            return storedChunkProvider = new ChunkProviderServer(this, null, null)
             {
                 @Nullable
                 @Override
@@ -103,7 +106,7 @@ public class SingleBlockWorld extends World
 
                             public void addTileEntity(BlockPos pos, TileEntity tileEntityIn)
                             {
-                                if (!pos.equals(SingleBlockWorld.pos))
+                                if (!pos.equals(SingleBlockWorldServer.pos))
                                     return;
                                 if (tileEntityIn.getWorld() != us) //Forge don't call unless it's changed, could screw up bad mods.
                                     tileEntityIn.setWorld(us);
@@ -125,7 +128,7 @@ public class SingleBlockWorld extends World
                             @Override
                             public void removeTileEntity(BlockPos pos)
                             {
-                                if (!pos.equals(SingleBlockWorld.pos))
+                                if (!pos.equals(SingleBlockWorldServer.pos))
                                     return;
                                 TileEntity tileentity = storedTileEntity;
 
@@ -147,7 +150,7 @@ public class SingleBlockWorld extends World
                             }
 
                             @Nullable
-                            public TileEntity getTileEntity(BlockPos pos, Chunk.EnumCreateEntityType p_177424_2_)
+                            public TileEntity getTileEntity(BlockPos pos, EnumCreateEntityType p_177424_2_)
                             {
                                 TileEntity tileentity = storedTileEntity;
 
@@ -159,12 +162,12 @@ public class SingleBlockWorld extends World
 
                                 if (tileentity == null)
                                 {
-                                    if (p_177424_2_ == Chunk.EnumCreateEntityType.IMMEDIATE)
+                                    if (p_177424_2_ == EnumCreateEntityType.IMMEDIATE)
                                     {
                                         tileentity = this.createNewTileEntity(pos);
                                         this.getWorld().setTileEntity(pos, tileentity);
                                     }
-                                    else if (p_177424_2_ == Chunk.EnumCreateEntityType.QUEUED)
+                                    else if (p_177424_2_ == EnumCreateEntityType.QUEUED)
                                     {
                                         tileentity = this.createNewTileEntity(pos);
                                         this.getWorld().setTileEntity(pos, tileentity);
@@ -329,7 +332,7 @@ public class SingleBlockWorld extends World
             {
                 //Forge: Bugfix: If we set the tile entity it immediately sets it in the chunk, so we could be desyned
                 Chunk chunk = this.getChunkFromBlockCoords(tileentity.getPos());
-                if (chunk.getTileEntity(tileentity.getPos(), net.minecraft.world.chunk.Chunk.EnumCreateEntityType.CHECK) == tileentity)
+                if (chunk.getTileEntity(tileentity.getPos(), Chunk.EnumCreateEntityType.CHECK) == tileentity)
                     chunk.removeTileEntity(tileentity.getPos());
             }
             storedTileEntity = null;
