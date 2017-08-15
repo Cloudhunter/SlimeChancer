@@ -1,5 +1,6 @@
 package uk.co.cloudhunter.slimechancer.client;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -13,17 +14,27 @@ import uk.co.cloudhunter.slimechancer.client.render.texture.GreyscaleTexture;
 import uk.co.cloudhunter.slimechancer.common.CommonProxy;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
 
+import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ClientProxy extends CommonProxy implements IResourceManagerReloadListener
 {
 
-    public ResourceLocation SLIME_TEXTURE;
+    private ResourceLocation SLIME_TEXTURE;
+
+    private HashMap<IBlockState, Color> colors = new HashMap<>();
 
     public ClientProxy()
     {
         super();
         SLIME_TEXTURE = new ResourceLocation("slimechancer", "assets/slimetexture");
+    }
+
+    @Override
+    public Object getColors()
+    {
+        return colors;
     }
 
     @Override

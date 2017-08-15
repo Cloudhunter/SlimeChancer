@@ -36,6 +36,11 @@ public class CommonProxy
         alreadyProcessed = new ArrayList<>();
     }
 
+    public Object getColors()
+    {
+        return null;
+    }
+
     public ResourceLocation getSlimeTexture()
     {
         return null;

@@ -10,6 +10,9 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 import uk.co.cloudhunter.slimechancer.common.CommonProxy;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
 
+import java.awt.*;
+import java.time.temporal.TemporalAmount;
+
 @Mod(modid = SlimeChancer.MODID, version = SlimeChancer.VERSION)
 public class SlimeChancer
 {
