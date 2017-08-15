@@ -39,7 +39,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
     private boolean blockRender = false;
     private static final ResourceLocation SLIME_TEXTURES = SlimeChancer.proxy.getSlimeTexture();
-    //public Color color = null;
 
     public HashMap<IBlockState, Color> colors = new HashMap<>();
 
