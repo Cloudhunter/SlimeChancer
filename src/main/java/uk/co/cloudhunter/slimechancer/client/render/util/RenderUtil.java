@@ -1,15 +1,20 @@
 package uk.co.cloudhunter.slimechancer.client.render.util;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import uk.co.cloudhunter.slimechancer.SlimeChancer;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 
 public class RenderUtil
@@ -48,7 +53,6 @@ public class RenderUtil
                 int r = bytes.get(i) & 0xFF;
                 int g = bytes.get(i + 1) & 0xFF;
                 int b = bytes.get(i + 2) & 0xFF;
-                System.out.println(r + " " + b + " " + g);
                 sumr += r;
                 sumg += g;
                 sumb += b;
@@ -59,6 +63,33 @@ public class RenderUtil
         int finalGreen = (int) sumg / num;
         int finalBlue = (int) sumb / num;
         return new Color(finalRed, finalGreen, finalBlue);
+    }
+
+    public static Color getColorFromState(IBlockState iblockstate) {
+        HashMap colors = (HashMap<IBlockState, Color>) SlimeChancer.proxy.getColors();
+
+        Color color = (Color) colors.get(iblockstate);
+
+        if (color == null)
+        {
+            System.out.println("Finding colour for iblockstate " + iblockstate);
+            if (iblockstate.getRenderType() == EnumBlockRenderType.INVISIBLE)
+            {
+                color = new Color(255, 255, 255, 255);
+            }
+            else
+            {
+                Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+                IBakedModel modelForState = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(iblockstate);
+                TextureAtlasSprite textureSprite = RenderUtil.getTexture(modelForState, iblockstate, EnumFacing.NORTH);
+                color = RenderUtil.getAverageColour(textureSprite);
+            }
+            colors.put(iblockstate, color);
+            System.out.println("Colour found for iblockstate " + iblockstate);
+        }
+
+        return color;
+
     }
 
     public static TextureAtlasSprite getTexture(IBakedModel ibakedmodel, IBlockState state, EnumFacing facing)

@@ -8,11 +8,16 @@ import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import uk.co.cloudhunter.slimechancer.client.render.SlimeRenderFactory;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import uk.co.cloudhunter.slimechancer.client.render.MySlimeRenderer;
+import uk.co.cloudhunter.slimechancer.client.render.PoopRenderer;
 import uk.co.cloudhunter.slimechancer.client.render.texture.GreyscaleTexture;
+import uk.co.cloudhunter.slimechancer.client.render.util.RenderUtil;
 import uk.co.cloudhunter.slimechancer.common.CommonProxy;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
+import uk.co.cloudhunter.slimechancer.common.entities.EntityPoop;
 
 import java.awt.*;
 import java.io.IOException;
@@ -23,7 +28,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 
     private ResourceLocation SLIME_TEXTURE;
 
-    private HashMap<IBlockState, Color> colors = new HashMap<>();
+    private HashMap<IBlockState, Color> colors;
 
     public ClientProxy()
     {
@@ -43,14 +48,14 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
         super.init();
         IReloadableResourceManager manager = (IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager();
         manager.registerReloadListener(this);
-        onResourceManagerReload(manager);
     }
 
     @Override
     public void preInit()
     {
         super.preInit();
-        RenderingRegistry.registerEntityRenderingHandler(EntityMySlime.class, new SlimeRenderFactory());
+        RenderingRegistry.registerEntityRenderingHandler(EntityMySlime.class, manager -> new MySlimeRenderer(manager));
+        RenderingRegistry.registerEntityRenderingHandler(EntityPoop.class, manager -> new PoopRenderer(manager));
     }
 
     @Override
@@ -69,10 +74,22 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
         Minecraft mc = Minecraft.getMinecraft();
         TextureManager manager = mc.getTextureManager();
         manager.loadTexture(getSlimeTexture(), tex);
+
+        colors = new HashMap();
+        for (IBlockState state : getOreStates()) {
+            RenderUtil.getColorFromState(state);
+        }
     }
 
     public ResourceLocation getSlimeTexture()
     {
         return SLIME_TEXTURE;
+    }
+
+    @SubscribeEvent
+    public void renderTest(RenderGameOverlayEvent event) {
+        switch (event.getType()) {
+            case HOTBAR:
+        }
     }
 }

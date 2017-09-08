@@ -12,24 +12,34 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.oredict.OreDictionary;
+import uk.co.cloudhunter.slimechancer.SlimeChancer;
+import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
+import uk.co.cloudhunter.slimechancer.common.entities.EntityPoop;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class CommonProxy
 {
 
     private final ArrayList<IBlockState> validOreStates;
     private final ArrayList<String> alreadyProcessed;
-    private final String prefix = "ore";
+    // TODO: Read these from config, with default
+    private final ArrayList<String> prefixes = new ArrayList<String>() {{
+        add("ore");
+        add("ingot");
+    }};
+    private final ArrayList<String> invalidStrings = new ArrayList<String>() {{
+        add("Brick");
+    }};
 
     public CommonProxy()
     {
@@ -54,6 +64,9 @@ public class CommonProxy
 
     public void preInit()
     {
+        EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "slimeymcslimeface"), EntityMySlime.class, "slimeymcslimeface", 0, SlimeChancer.instance, 80, 3, true, 0xFF00FF, 0x00FF00);
+        EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "poop"), EntityPoop.class, "slimeymcslimeface", 0, SlimeChancer.instance, 80, 3, true, 0xFF00FF, 0x00FFFF);
+        MinecraftForge.EVENT_BUS.register(this);
         String[] oreNames = OreDictionary.getOreNames();
         for (int i = 0; i < oreNames.length; i++)
         {
@@ -79,37 +92,44 @@ public class CommonProxy
     private void checkAndAddOreState(String oreName, @Nullable ItemStack stack)
     {
         if (alreadyProcessed.contains(oreName)) return;
-        if (oreName.length() >= 3 && oreName.substring(0, 3).equals(prefix))
-        {
-            IBlockState state = null;
-            if (stack == null)
+        for(String prefix : prefixes)
+            if (oreName.length() >= prefix.length() && oreName.substring(0, prefix.length()).equals(prefix))
             {
-                NonNullList<ItemStack> ores = OreDictionary.getOres(oreName);
-                for (ItemStack tempStack : ores)
+                for(String invalid : invalidStrings)
+                    if (oreName.contains(invalid))
+                        return;
+
+                IBlockState state = null;
+                if (stack == null)
                 {
-                    state = getLowestState(tempStack);
-                    if (state != null) {
-                        break;
+                    NonNullList<ItemStack> ores = OreDictionary.getOres(oreName);
+                    for (ItemStack tempStack : ores)
+                    {
+                        state = getLowestState(tempStack);
+                        if (state != null) {
+                            break;
+                        }
                     }
+
+
+                }
+                else
+                {
+                    state = getLowestState(stack);
                 }
 
-
+                if (state == null)
+                {
+                    System.out.println("WARNING: Could not find processed block for " + oreName); //TODO: Change to log
+                }
+                else
+                {
+                    if (validOreStates.contains(state)) return;
+                    System.out.println("Found " + oreName);
+                    validOreStates.add(state);
+                    alreadyProcessed.add(oreName);
+                }
             }
-            else
-            {
-                state = getLowestState(stack);
-            }
-
-            if (state == null)
-            {
-                System.out.println("WARNING: Could not find processed block for " + oreName); //TODO: Change to log
-            }
-            else
-            {
-                validOreStates.add(state);
-                alreadyProcessed.add(oreName);
-            }
-        }
     }
 
     @SuppressWarnings("deprecation")

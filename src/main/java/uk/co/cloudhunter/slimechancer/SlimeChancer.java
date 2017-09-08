@@ -22,17 +22,19 @@ public class SlimeChancer
 
     @SidedProxy(clientSide = "uk.co.cloudhunter.slimechancer.client.ClientProxy", serverSide = "uk.co.cloudhunter.slimechancer.client.CommonProxy")
     public static CommonProxy proxy;
+    @Mod.Instance
+    public static SlimeChancer instance;
+
+
+    @EventHandler
+    public void preinit(FMLPreInitializationEvent event)
+    {
+        proxy.preInit();
+    }
 
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
         proxy.init();
-    }
-
-    @EventHandler
-    public void preinit(FMLPreInitializationEvent event)
-    {
-        EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "slimeymcslimeface"), EntityMySlime.class, "slimeymcslimeface", 0, this, 80, 3, true, 0xFF00FF, 0x00FF00);
-        proxy.preInit();
     }
 }

@@ -2,10 +2,7 @@ package uk.co.cloudhunter.slimechancer.client.render;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.entity.RenderLiving;
@@ -40,8 +37,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
     private boolean blockRender = false;
     private static final ResourceLocation SLIME_TEXTURES = SlimeChancer.proxy.getSlimeTexture();
 
-    //public HashMap<IBlockState, Color> colors = new HashMap<>();
-
     public MySlimeRenderer(RenderManager p_i47193_1_)
     {
         super(p_i47193_1_, new MyModelSlime(16), 0.25F);
@@ -63,25 +58,6 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
         IBlockState iblockstate = entity.getSlimeType();
 
-        HashMap colors = (HashMap<IBlockState, Color>) SlimeChancer.proxy.getColors();
-
-        if (colors.get(iblockstate) == null)
-        {
-            if (iblockstate.getRenderType() == EnumBlockRenderType.INVISIBLE)
-            {
-                colors.put(iblockstate, new Color(255, 255, 255, 255));
-            }
-            else
-            {
-                Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-                IBakedModel modelForState = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(iblockstate);
-                TextureAtlasSprite textureSprite = RenderUtil.getTexture(modelForState, iblockstate, EnumFacing.NORTH);
-                colors.put(iblockstate, RenderUtil.getAverageColour(textureSprite));
-            }
-
-        }
-
-
         if (iblockstate != null)
         {
             if (iblockstate.getRenderType() != EnumBlockRenderType.INVISIBLE && iblockstate.getRenderType() != EnumBlockRenderType.ENTITYBLOCK_ANIMATED)
@@ -93,6 +69,10 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
                 GlStateManager.pushMatrix();
                 GlStateManager.translate((float) x, (float) y, (float) z);
                 GlStateManager.disableLighting();
+
+                GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+                GlStateManager.enableBlend();
+                RenderHelper.disableStandardItemLighting();
 
                 Tessellator tessellator = Tessellator.getInstance();
                 BufferBuilder bufferbuilder = tessellator.getBuffer();
@@ -130,6 +110,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
                 GlStateManager.enableLighting();
                 GlStateManager.popMatrix();
+                RenderHelper.enableStandardItemLighting();
 
             }
 
