@@ -43,10 +43,10 @@ public class EntityMySlime extends EntitySlime
 {
 
     private BlockPos origin;
-    public World singleBlockWorld;
+//    public World singleBlockWorld;
 //    public IBlockState type;
 
-    private static final DataParameter<IBlockState> SLIME_TYPE = EntityDataManager.<IBlockState>createKey(EntityMySlime.class, BLOCK_STATE);
+    private static final DataParameter<IBlockState> SLIME_TYPE = EntityDataManager.createKey(EntityMySlime.class, BLOCK_STATE);
 
     static
     {
@@ -70,17 +70,17 @@ public class EntityMySlime extends EntitySlime
     {
         setSlimeSize(0, false);
         super.setDead();
-        if (singleBlockWorld != null)
+/*        if (singleBlockWorld != null)
         {
-/*            BlockPos pos = new BlockPos(0, 0, 0)
+            BlockPos pos = new BlockPos(0, 0, 0)
             TileEntity entity = singleBlockWorld.getTileEntity(pos);
             if (entity != null) {
                 IBlockState state = singleBlockWorld.getBlockState(pos);
                 state.getBlock().onBlockDestroyedByPlayer(singleBlockWorld, pos, state);
 
-            }*/
+            }
             singleBlockWorld.setBlockState(SingleBlockWorld.pos, Blocks.AIR.getDefaultState());
-        }
+        }*/
     }
 
     @Override
@@ -107,10 +107,10 @@ public class EntityMySlime extends EntitySlime
             this.setDead();
             return;
         }
-        if (updateWorld)
+/*        if (updateWorld)
         {
             singleBlockWorld.setBlockState(SingleBlockWorld.pos, state);
-        }
+        }*/
         this.dataManager.set(SLIME_TYPE, state);
     }
 
@@ -122,6 +122,7 @@ public class EntityMySlime extends EntitySlime
     @Override
     public void notifyDataManagerChange(DataParameter<?> key)
     {
+        /*
         if (SLIME_TYPE.equals(key) && world.isRemote)
         {
             IBlockState state = this.getSlimeType();
@@ -137,7 +138,7 @@ public class EntityMySlime extends EntitySlime
                 singleBlockWorld.setBlockState(SingleBlockWorld.pos, state);
             }
         }
-
+        */
         super.notifyDataManagerChange(key);
     }
 
@@ -145,10 +146,10 @@ public class EntityMySlime extends EntitySlime
     public void onEntityUpdate()
     {
         super.onEntityUpdate();
-        if (singleBlockWorld != null)
+        /*if (singleBlockWorld != null)
         {
             singleBlockWorld.updateEntities();
-        }
+        }*/
     }
 
     @Override
@@ -156,7 +157,7 @@ public class EntityMySlime extends EntitySlime
     {
         super.readEntityFromNBT(compound);
         IBlockState blockstate = NBTUtil.readBlockState(compound);
-        if (blockstate.getBlock().hasTileEntity(blockstate))
+/*        if (blockstate.getBlock().hasTileEntity(blockstate))
         {
             String teClass = compound.getString("teclass");
             if (teClass != null && !teClass.isEmpty())
@@ -184,7 +185,7 @@ public class EntityMySlime extends EntitySlime
                     return;
                 }
             }
-        }
+        }*/
         setSlimeType(blockstate);
     }
 
@@ -194,7 +195,7 @@ public class EntityMySlime extends EntitySlime
         super.writeEntityToNBT(compound);
         IBlockState blockState = getSlimeType();
         NBTUtil.writeBlockState(compound, blockState);
-        if (blockState.getBlock().hasTileEntity(blockState))
+/*        if (blockState.getBlock().hasTileEntity(blockState))
         {
             if (singleBlockWorld != null)
             {
@@ -208,7 +209,7 @@ public class EntityMySlime extends EntitySlime
                 }
 
             }
-        }
+        }*/
     }
 
     public BlockPos getOrigin()
@@ -240,10 +241,14 @@ public class EntityMySlime extends EntitySlime
 
         IBlockState state = SlimeChancer.proxy.getOreStates().get(i);
 
+        setSlimeType(state);
+
+        /*
         if (world instanceof WorldServer)
             singleBlockWorld = new SingleBlockWorldServer(state, this);
         else
             singleBlockWorld = new SingleBlockWorld(state, this, true);
+        */
 
         return super.onInitialSpawn(difficulty, livingdata);
     }
@@ -267,11 +272,11 @@ public class EntityMySlime extends EntitySlime
                 }
             }
         }
-        if (singleBlockWorld != null && !player.isSneaking())
+        /*if (singleBlockWorld != null && !player.isSneaking())
         {
             IBlockState state = singleBlockWorld.getBlockState(SingleBlockWorld.pos);
             return state.getBlock().onBlockActivated(singleBlockWorld, SingleBlockWorld.pos, state, player, hand, EnumFacing.NORTH, 0, 0, 0);
-        }
+        }*/
 
         return super.processInteract(player, hand);
     }

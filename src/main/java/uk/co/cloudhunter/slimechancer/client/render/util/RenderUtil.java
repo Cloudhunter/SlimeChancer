@@ -48,6 +48,7 @@ public class RenderUtil
                 int r = bytes.get(i) & 0xFF;
                 int g = bytes.get(i + 1) & 0xFF;
                 int b = bytes.get(i + 2) & 0xFF;
+                System.out.println(r + " " + b + " " + g);
                 sumr += r;
                 sumg += g;
                 sumb += b;

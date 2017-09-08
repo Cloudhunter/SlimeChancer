@@ -21,6 +21,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class CommonProxy
@@ -36,7 +37,7 @@ public class CommonProxy
         alreadyProcessed = new ArrayList<>();
     }
 
-    public Object getColors()
+    public HashMap getColors()
     {
         return null;
     }
@@ -99,9 +100,12 @@ public class CommonProxy
                 state = getLowestState(stack);
             }
 
-            if (state == null) {
+            if (state == null)
+            {
                 System.out.println("WARNING: Could not find processed block for " + oreName); //TODO: Change to log
-            } else {
+            }
+            else
+            {
                 validOreStates.add(state);
                 alreadyProcessed.add(oreName);
             }

@@ -41,20 +41,25 @@ public class SingleBlockWorldServer extends WorldServer
     private Chunk storedChunk;
     private World us = this;
 
-    public SingleBlockWorldServer(IBlockState blockState)
+    public SingleBlockWorldServer(MinecraftServer server, ISaveHandler saveHandlerIn, WorldInfo info, int dimensionId, Profiler profilerIn)
     {
-        this(blockState, null);
-        //storedBlockState = blockState;
+        super(server, saveHandlerIn, info, dimensionId, profilerIn);
     }
 
-    public SingleBlockWorldServer(IBlockState blockState, EntityMySlime slime)
+    /*public SingleBlockWorldServer(IBlockState blockState)
+    {
+        //super(blockState, null);
+        //storedBlockState = blockState;
+    }*/
+
+    /*public SingleBlockWorldServer(IBlockState blockState, EntityMySlime slime)
     {
         super(FMLCommonHandler.instance().getMinecraftServerInstance(), new SaveHandlerMP(), new WorldInfo(new WorldSettings(0, GameType.CREATIVE, true, false, WorldType.DEFAULT), "mahfake"), -9654, new Profiler());
         DimensionManager.setWorld(-9654, null, FMLCommonHandler.instance().getMinecraftServerInstance());
         this.storedSlime = slime;
         this.chunkProvider = this.createChunkProvider();
         this.setBlockState(SingleBlockWorldServer.pos, blockState);
-    }
+    }*/
 
     public BlockPos getSpawnPoint()
     {

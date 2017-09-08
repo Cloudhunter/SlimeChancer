@@ -40,7 +40,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
     private boolean blockRender = false;
     private static final ResourceLocation SLIME_TEXTURES = SlimeChancer.proxy.getSlimeTexture();
 
-    public HashMap<IBlockState, Color> colors = new HashMap<>();
+    //public HashMap<IBlockState, Color> colors = new HashMap<>();
 
     public MySlimeRenderer(RenderManager p_i47193_1_)
     {
@@ -67,12 +67,13 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
         if (colors.get(iblockstate) == null)
         {
-            if (iblockstate.getRenderType() != EnumBlockRenderType.MODEL)
+            if (iblockstate.getRenderType() == EnumBlockRenderType.INVISIBLE)
             {
                 colors.put(iblockstate, new Color(255, 255, 255, 255));
             }
             else
             {
+                System.out.println("Summat here.");
                 Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                 IBakedModel modelForState = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(iblockstate);
                 TextureAtlasSprite textureSprite = RenderUtil.getTexture(modelForState, iblockstate, EnumFacing.NORTH);
@@ -133,6 +134,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
             }
 
+            /*
             if (iblockstate.getBlock().hasTileEntity(iblockstate))
             {
                 if (iblockstate.getBlock().hasTileEntity(iblockstate))
@@ -165,7 +167,7 @@ public class MySlimeRenderer extends RenderLiving<EntityMySlime>
 
                     }
                 }
-            }
+            }*/
         }
     }
 

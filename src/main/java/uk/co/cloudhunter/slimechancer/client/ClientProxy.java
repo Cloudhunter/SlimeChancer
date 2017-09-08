@@ -32,7 +32,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
     }
 
     @Override
-    public Object getColors()
+    public HashMap<IBlockState, Color> getColors()
     {
         return colors;
     }
