@@ -14,7 +14,13 @@ public class EntityPoop extends Entity
     @Override
     protected void entityInit()
     {
+        //System.out.println("Init");
+    }
 
+    @Override
+    public void onUpdate()
+    {
+        //System.out.println("updating");
     }
 
     /**

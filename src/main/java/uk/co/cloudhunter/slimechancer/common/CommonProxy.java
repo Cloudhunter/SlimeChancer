@@ -65,7 +65,7 @@ public class CommonProxy
     public void preInit()
     {
         EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "slimeymcslimeface"), EntityMySlime.class, "slimeymcslimeface", 0, SlimeChancer.instance, 80, 3, true, 0xFF00FF, 0x00FF00);
-        EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "poop"), EntityPoop.class, "poop", 0, SlimeChancer.instance, 80, 3, true, 0xFF00FF, 0x00FFFF);
+        EntityRegistry.registerModEntity(new ResourceLocation("slimechancer", "poop"), EntityPoop.class, "poop", 1, SlimeChancer.instance, 80, 3, true);
         MinecraftForge.EVENT_BUS.register(this);
         String[] oreNames = OreDictionary.getOreNames();
         for (int i = 0; i < oreNames.length; i++)
