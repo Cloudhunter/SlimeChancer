@@ -1,5 +1,6 @@
 package uk.co.cloudhunter.slimechancer.common;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -16,10 +17,14 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import uk.co.cloudhunter.slimechancer.SlimeChancer;
+import uk.co.cloudhunter.slimechancer.common.block.CorallField;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityMySlime;
 import uk.co.cloudhunter.slimechancer.common.entities.EntityPoop;
 
@@ -27,6 +32,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@Mod.EventBusSubscriber(modid = SlimeChancer.MODID)
 public class CommonProxy
 {
 
@@ -78,6 +84,22 @@ public class CommonProxy
     public void oreDictAdded(OreDictionary.OreRegisterEvent event)
     {
         checkAndAddOreState(event.getName(), event.getOre());
+    }
+
+    @SubscribeEvent
+    public static void registerBlocks(RegistryEvent.Register<Block> event)
+    {
+        SlimeChancer.Blocks.init();
+        event.getRegistry().registerAll(SlimeChancer.Blocks.getBlocks());
+        System.out.println("Registered Blocks");
+    }
+
+    @SubscribeEvent
+    public static void registerItems(RegistryEvent.Register<Item> event)
+    {
+        SlimeChancer.Items.init();
+        event.getRegistry().registerAll(SlimeChancer.Items.getItems());
+        System.out.println("Registered Items");
     }
 
     private final InventoryCrafting inventoryCrafting = new InventoryCrafting(new Container()
