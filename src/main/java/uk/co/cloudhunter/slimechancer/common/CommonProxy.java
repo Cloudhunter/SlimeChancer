@@ -234,4 +234,12 @@ public class CommonProxy
     {
         return validOreStates;
     }
+
+    public Object getSlimeBlockTexture() {
+        return null;
+    }
+
+    public float getMaxUV() {
+        return 16;
+    }
 }

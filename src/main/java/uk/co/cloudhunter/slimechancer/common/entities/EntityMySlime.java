@@ -235,6 +235,7 @@ public class EntityMySlime extends EntitySlime
     }
 
     @Nullable
+    @Override
     public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata)
     {
         int i = this.rand.nextInt(SlimeChancer.proxy.getOreStates().size());
